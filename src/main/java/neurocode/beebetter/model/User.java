@@ -28,7 +28,6 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    // RELACIONAMENTOS
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Task> tasks;
