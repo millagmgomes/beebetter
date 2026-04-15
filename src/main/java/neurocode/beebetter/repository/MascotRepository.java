@@ -1,7 +1,10 @@
 package neurocode.beebetter.repository;
 
-import neurocode.beebetter.model.PomodoroSession;
+import neurocode.beebetter.model.Mascot;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MascotRepository extends JpaRepository<PomodoroSession, Long> {
+import java.util.Optional;
+
+public interface MascotRepository extends JpaRepository<Mascot, Long> {
+    Optional<Mascot> findByUserId(Long userId);
 }

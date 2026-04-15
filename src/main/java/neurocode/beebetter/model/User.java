@@ -2,7 +2,7 @@ package neurocode.beebetter.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.scheduling.config.Task;
+import neurocode.beebetter.model.Task;
 
 import java.util.List;
 
@@ -28,7 +28,6 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Task> tasks;
 
@@ -37,5 +36,8 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Mascot mascot;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<DailyProgress> dailyProgresses;
 }
 

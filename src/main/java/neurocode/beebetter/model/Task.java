@@ -26,6 +26,4 @@ public class Task {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToOne(mappedBy = "task", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private DailyProgress dailyProgress;
 }
