@@ -1,7 +1,5 @@
 package neurocode.beebetter.service;
 
-
-
 import neurocode.beebetter.dto.TaskRequestDTO;
 import neurocode.beebetter.dto.TaskResponseDTO;
 import neurocode.beebetter.model.Task;
@@ -11,11 +9,15 @@ import neurocode.beebetter.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import neurocode.beebetter.service.DailyProgressService;
 import java.util.List;
 
 @Service
 public class TaskService {
+
+
+    @Autowired
+    private CoinService coinService;
 
     @Autowired
     private TaskRepository taskRepository;
@@ -25,6 +27,10 @@ public class TaskService {
 
     @Autowired
     private MascotService mascotService;
+
+    @Autowired
+    private DailyProgressService dailyProgressService;
+
 
     public List<TaskResponseDTO> listByUser(Long userId) {
         return taskRepository.findByUserId(userId)
@@ -56,7 +62,11 @@ public class TaskService {
         task.setCompleted(true);
         taskRepository.save(task);
 
-        mascotService.addExperience(task.getUser().getId(), 20);
+        Long userId = task.getUser().getId();
+
+        mascotService.addExperience(userId, 20);
+        dailyProgressService.registerCompletedTask(userId);
+        coinService.addTaskReward(userId);
 
         return new TaskResponseDTO(task.getId(), task.getTitle(), task.getDescription(), true);
     }

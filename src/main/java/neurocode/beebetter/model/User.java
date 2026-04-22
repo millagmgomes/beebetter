@@ -4,14 +4,13 @@ import jakarta.persistence.*;
 import lombok.*;
 import neurocode.beebetter.model.Task;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @Builder
 public class User {
 
@@ -28,6 +27,14 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    private LocalDate birthDate;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer coins = 0;
+
+    private String profilePictureUrl;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Task> tasks;
 
@@ -40,4 +47,3 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<DailyProgress> dailyProgresses;
 }
-

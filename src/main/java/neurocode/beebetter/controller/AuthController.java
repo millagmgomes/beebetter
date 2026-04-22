@@ -3,7 +3,7 @@ package neurocode.beebetter.controller;
 import neurocode.beebetter.dto.AuthResponseDTO;
 import neurocode.beebetter.dto.LoginRequestDTO;
 import neurocode.beebetter.dto.RegisterRequestDTO;
-import neurocode.beebetter.service.AuthService;
+import neurocode.beebetter.security.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

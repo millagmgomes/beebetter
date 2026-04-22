@@ -7,8 +7,10 @@ import java.time.LocalDate;
 
 @Entity
 @Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
+@Table(name = "daily_progress")
 public class DailyProgress {
 
     @Id
@@ -17,9 +19,11 @@ public class DailyProgress {
 
     private LocalDate date;
 
-    private Integer completedTasks;
+    @Builder.Default
+    private Integer completedTasks = 0;    // ← default explícito
 
-    private Integer focusMinutes;
+    @Builder.Default
+    private Integer focusMinutes = 0;      // ← default explícito
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

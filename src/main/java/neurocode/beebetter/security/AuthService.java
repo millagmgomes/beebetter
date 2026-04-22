@@ -1,4 +1,4 @@
-package neurocode.beebetter.service;
+package neurocode.beebetter.security;
 
 import neurocode.beebetter.dto.AuthResponseDTO;
 import neurocode.beebetter.dto.LoginRequestDTO;
@@ -8,7 +8,6 @@ import neurocode.beebetter.model.Mascot;
 import neurocode.beebetter.model.User;
 import neurocode.beebetter.repository.MascotRepository;
 import neurocode.beebetter.repository.UserRepository;
-import neurocode.beebetter.security.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,10 +32,11 @@ public class AuthService {
                 .name(dto.name())
                 .email(dto.email())
                 .password(passwordEncoder.encode(dto.password()))
+                .birthDate(dto.birthDate())   // ← novo
+                .coins(0)
                 .build();
 
         userRepository.save(user);
-
 
         Mascot mascot = Mascot.builder()
                 .name("Bee")
@@ -51,6 +51,17 @@ public class AuthService {
         return new AuthResponseDTO(token, toDTO(user));
     }
 
+    private UserResponseDTO toDTO(User user) {
+        return new UserResponseDTO(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getBirthDate(),
+                user.getCoins(),
+                user.getProfilePictureUrl()
+        );
+    }
+
     public AuthResponseDTO login(LoginRequestDTO dto) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(dto.email(), dto.password())
@@ -61,9 +72,5 @@ public class AuthService {
 
         String token = jwtService.generateToken(user.getEmail());
         return new AuthResponseDTO(token, toDTO(user));
-    }
-
-    private UserResponseDTO toDTO(User user) {
-        return new UserResponseDTO(user.getId(), user.getName(), user.getEmail());
     }
 }

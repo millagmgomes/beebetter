@@ -15,10 +15,29 @@ import java.time.LocalDate;
 public class DailyProgressService {
 
     @Autowired
+    private CoinService coinService;
+
+    @Autowired
     private DailyProgressRepository dailyProgressRepository;
 
     @Autowired
     private UserRepository userRepository;
+
+
+    @Transactional
+    public boolean registerDailyLogin(Long userId) {
+        boolean isFirstLoginToday = dailyProgressRepository
+                .findByUserIdAndDate(userId, LocalDate.now())
+                .isEmpty();
+
+        if (isFirstLoginToday) {
+            getOrCreateToday(userId);
+            coinService.addDailyLoginReward(userId);
+            return true;
+        }
+
+        return false;
+    }
 
 
     @Transactional

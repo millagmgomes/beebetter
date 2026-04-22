@@ -1,26 +1,56 @@
 package neurocode.beebetter.controller;
 
-import neurocode.beebetter.model.User;
+import java.io.IOException;
+import neurocode.beebetter.dto.UserResponseDTO;
+import neurocode.beebetter.service.CoinService;
+import neurocode.beebetter.service.DailyProgressService;
+import neurocode.beebetter.service.ProfilePictureService;
 import neurocode.beebetter.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
-@RestController 
+import java.util.List;
+import java.util.Map;
+
+@RestController
 @RequestMapping("/users")
 public class UserController {
 
-    @Autowired
-    private UserService service;
+    @Autowired private UserService userService;
+    @Autowired private CoinService coinService;
+    @Autowired private ProfilePictureService profilePictureService;
+    @Autowired private DailyProgressService dailyProgressService;
 
-    @GetMapping 
-    public ResponseEntity<List<User>> findAll() {
-        return ResponseEntity.ok().body(service.listAll());
+    @GetMapping
+    public ResponseEntity<List<UserResponseDTO>> findAll() {
+        return ResponseEntity.ok(userService.listAll());
     }
 
-    @PostMapping 
-    public User create(@RequestBody User user) {
-        return service.save(user);
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponseDTO> findById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.findById(id));
+    }
+
+
+    @PostMapping("/{id}/daily-login")
+    public ResponseEntity<Map<String, Object>> dailyLogin(@PathVariable Long id) {
+        boolean firstLogin = dailyProgressService.registerDailyLogin(id);
+        Integer coins = coinService.getCoins(id);
+
+        return ResponseEntity.ok(Map.of(
+                "firstLoginToday", firstLogin,
+                "coins", coins
+        ));
+    }
+
+    @PostMapping("/{id}/profile-picture")
+    public ResponseEntity<Map<String, String>> uploadProfilePicture(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) throws IOException {
+
+        String url = profilePictureService.upload(id, file);
+        return ResponseEntity.ok(Map.of("profilePictureUrl", url));
     }
 }
