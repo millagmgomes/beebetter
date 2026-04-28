@@ -24,9 +24,11 @@ public class ProfilePictureService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new RuntimeException("Arquivo deve ser uma imagem");
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || (!originalFilename.endsWith(".jpg")
+                && !originalFilename.endsWith(".jpeg")
+                && !originalFilename.endsWith(".png"))) {
+            throw new RuntimeException("Arquivo deve ser uma imagem JPG ou PNG");
         }
 
         Path uploadPath = Paths.get(uploadDir);
