@@ -35,6 +35,22 @@ public class User {
 
     private String profilePictureUrl;
 
+    private String gender;
+    private String state;
+    private String city;
+    private String hasTdah;
+    private String occupation;
+
+    @ElementCollection
+    @CollectionTable(name = "user_other_conditions", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "condition")
+    private List<String> otherConditions;
+
+    @ElementCollection
+    @CollectionTable(name = "user_symptoms", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "symptom")
+    private List<String> symptoms;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Task> tasks;
 

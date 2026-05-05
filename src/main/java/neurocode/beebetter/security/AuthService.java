@@ -58,7 +58,14 @@ public class AuthService {
                 user.getEmail(),
                 user.getBirthDate(),
                 user.getCoins(),
-                user.getProfilePictureUrl()
+                user.getProfilePictureUrl(),
+                user.getGender(),
+                user.getState(),
+                user.getCity(),
+                user.getHasTdah(),
+                user.getOtherConditions(),
+                user.getOccupation(),
+                user.getSymptoms()
         );
     }
 

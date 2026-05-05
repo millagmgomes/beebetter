@@ -1,6 +1,8 @@
 package neurocode.beebetter.controller;
 
 import java.io.IOException;
+
+import neurocode.beebetter.dto.UpdateUserDTO;
 import neurocode.beebetter.dto.UserResponseDTO;
 import neurocode.beebetter.service.CoinService;
 import neurocode.beebetter.service.DailyProgressService;
@@ -33,6 +35,10 @@ public class UserController {
         return ResponseEntity.ok(userService.findById(id));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponseDTO> update(@PathVariable Long id, @RequestBody UpdateUserDTO dto) {
+        return ResponseEntity.ok(userService.update(id, dto));
+    }
 
     @PostMapping("/{id}/daily-login")
     public ResponseEntity<Map<String, Object>> dailyLogin(@PathVariable Long id) {
@@ -49,6 +55,10 @@ public class UserController {
     public ResponseEntity<Map<String, String>> uploadProfilePicture(
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file) throws IOException {
+
+        System.out.println("=== UPLOAD FOTO ===");
+        System.out.println("userId: " + id);
+        System.out.println("file: " + file.getOriginalFilename());
 
         String url = profilePictureService.upload(id, file);
         return ResponseEntity.ok(Map.of("profilePictureUrl", url));
