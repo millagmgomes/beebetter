@@ -6,5 +6,6 @@ public record DailyProgressResponseDTO(
         Long id,
         LocalDate date,
         Integer completedTasks,
-        Integer focusMinutes
+        Integer focusMinutes,
+        Integer totalTasks
 ) {}

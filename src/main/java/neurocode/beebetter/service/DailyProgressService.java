@@ -5,11 +5,13 @@ import neurocode.beebetter.dto.DailyProgressResponseDTO;
 import neurocode.beebetter.model.DailyProgress;
 import neurocode.beebetter.model.User;
 import neurocode.beebetter.repository.DailyProgressRepository;
+import neurocode.beebetter.repository.TaskRepository;
 import neurocode.beebetter.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class DailyProgressService {
@@ -22,6 +24,9 @@ public class DailyProgressService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TaskRepository taskRepository;
 
 
     @Transactional
@@ -59,6 +64,13 @@ public class DailyProgressService {
         return toDTO(progress);
     }
 
+    public List<DailyProgressResponseDTO> getHistory(Long userId, LocalDate start, LocalDate end) {
+        return dailyProgressRepository.findByUserIdAndDateBetween(userId, start, end)
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
     private DailyProgress getOrCreateToday(Long userId) {
         return dailyProgressRepository
                 .findByUserIdAndDate(userId, LocalDate.now())
@@ -78,11 +90,16 @@ public class DailyProgressService {
     }
 
     private DailyProgressResponseDTO toDTO(DailyProgress dp) {
+        int totalTasks = taskRepository
+                .findByUserIdAndDueDate(dp.getUser().getId(), dp.getDate())
+                .size();
+
         return new DailyProgressResponseDTO(
                 dp.getId(),
                 dp.getDate(),
                 dp.getCompletedTasks(),
-                dp.getFocusMinutes()
+                dp.getFocusMinutes(),
+                totalTasks
         );
     }
 }

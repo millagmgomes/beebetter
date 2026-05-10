@@ -2,6 +2,7 @@ package neurocode.beebetter.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -21,6 +22,8 @@ public class Task {
     private String description;
 
     private boolean completed;
+
+    private LocalDate dueDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

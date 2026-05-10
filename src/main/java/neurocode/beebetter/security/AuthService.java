@@ -32,7 +32,7 @@ public class AuthService {
                 .name(dto.name())
                 .email(dto.email())
                 .password(passwordEncoder.encode(dto.password()))
-                .birthDate(dto.birthDate())   // ← novo
+                .birthDate(dto.birthDate())
                 .coins(0)
                 .build();
 
@@ -52,6 +52,19 @@ public class AuthService {
     }
 
     private UserResponseDTO toDTO(User user) {
+        Integer level = 1;
+        Integer experience = 0;
+
+        try {
+            Mascot mascot = mascotRepository.findByUserId(user.getId()).orElse(null);
+            if (mascot != null) {
+                level = mascot.getLevel();
+                experience = mascot.getExperience();
+            }
+        } catch (Exception e) {
+            System.out.println("Erro ao buscar mascot: " + e.getMessage());
+        }
+
         return new UserResponseDTO(
                 user.getId(),
                 user.getName(),
@@ -65,7 +78,9 @@ public class AuthService {
                 user.getHasTdah(),
                 user.getOtherConditions(),
                 user.getOccupation(),
-                user.getSymptoms()
+                user.getSymptoms(),
+                level,
+                experience
         );
     }
 

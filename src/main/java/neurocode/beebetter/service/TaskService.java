@@ -9,12 +9,11 @@ import neurocode.beebetter.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import neurocode.beebetter.service.DailyProgressService;
 import java.util.List;
+import java.time.LocalDate;
 
 @Service
 public class TaskService {
-
 
     @Autowired
     private CoinService coinService;
@@ -31,11 +30,17 @@ public class TaskService {
     @Autowired
     private DailyProgressService dailyProgressService;
 
-
     public List<TaskResponseDTO> listByUser(Long userId) {
         return taskRepository.findByUserId(userId)
                 .stream()
-                .map(t -> new TaskResponseDTO(t.getId(), t.getTitle(), t.getDescription(), t.isCompleted()))
+                .map(t -> new TaskResponseDTO(t.getId(), t.getTitle(), t.getDescription(), t.isCompleted(), t.getDueDate()))
+                .toList();
+    }
+
+    public List<TaskResponseDTO> listByUserAndDate(Long userId, LocalDate date) {
+        return taskRepository.findByUserIdAndDueDate(userId, date)
+                .stream()
+                .map(t -> new TaskResponseDTO(t.getId(), t.getTitle(), t.getDescription(), t.isCompleted(), t.getDueDate()))
                 .toList();
     }
 
@@ -47,11 +52,12 @@ public class TaskService {
                 .title(dto.title())
                 .description(dto.description())
                 .completed(false)
+                .dueDate(dto.dueDate())
                 .user(user)
                 .build();
 
         taskRepository.save(task);
-        return new TaskResponseDTO(task.getId(), task.getTitle(), task.getDescription(), task.isCompleted());
+        return new TaskResponseDTO(task.getId(), task.getTitle(), task.getDescription(), task.isCompleted(), task.getDueDate());
     }
 
     @Transactional
@@ -63,11 +69,10 @@ public class TaskService {
         taskRepository.save(task);
 
         Long userId = task.getUser().getId();
-
         mascotService.addExperience(userId, 20);
         dailyProgressService.registerCompletedTask(userId);
         coinService.addTaskReward(userId);
 
-        return new TaskResponseDTO(task.getId(), task.getTitle(), task.getDescription(), true);
+        return new TaskResponseDTO(task.getId(), task.getTitle(), task.getDescription(), true, task.getDueDate());
     }
 }

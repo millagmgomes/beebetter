@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.List;
 
@@ -18,7 +20,12 @@ public class TaskController {
     private TaskService taskService;
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<TaskResponseDTO>> listByUser(@PathVariable Long userId) {
+    public ResponseEntity<List<TaskResponseDTO>> listByUser(
+            @PathVariable Long userId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        if (date != null) {
+            return ResponseEntity.ok(taskService.listByUserAndDate(userId, date));
+        }
         return ResponseEntity.ok(taskService.listByUser(userId));
     }
 

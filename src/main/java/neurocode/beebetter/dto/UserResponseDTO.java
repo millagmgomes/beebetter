@@ -16,5 +16,7 @@ public record UserResponseDTO(
         String hasTdah,
         List<String> otherConditions,
         String occupation,
-        List<String> symptoms
+        List<String> symptoms,
+        Integer mascotLevel,
+        Integer mascotExperience
 ) {}

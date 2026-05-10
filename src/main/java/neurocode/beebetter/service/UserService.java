@@ -2,7 +2,9 @@ package neurocode.beebetter.service;
 
 import neurocode.beebetter.dto.UpdateUserDTO;
 import neurocode.beebetter.dto.UserResponseDTO;
+import neurocode.beebetter.model.Mascot;
 import neurocode.beebetter.model.User;
+import neurocode.beebetter.repository.MascotRepository;
 import neurocode.beebetter.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,8 +13,11 @@ import java.util.List;
 @Service
 public class UserService {
 
-    @Autowired 
+    @Autowired
     private UserRepository repository;
+
+    @Autowired
+    private MascotRepository mascotRepository; // ← adicionado
 
     public User save(User user) {
         return repository.save(user);
@@ -31,24 +36,6 @@ public class UserService {
         return toDTO(user);
     }
 
-    private UserResponseDTO toDTO(User user) {
-        return new UserResponseDTO(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                user.getBirthDate(),
-                user.getCoins(),
-                user.getProfilePictureUrl(),
-                user.getGender(),
-                user.getState(),
-                user.getCity(),
-                user.getHasTdah(),
-                user.getOtherConditions(),
-                user.getOccupation(),
-                user.getSymptoms()
-        );
-    }
-
     public UserResponseDTO update(Long id, UpdateUserDTO dto) {
         User user = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
@@ -63,5 +50,38 @@ public class UserService {
         if (dto.symptoms() != null) user.setSymptoms(dto.symptoms());
 
         return toDTO(repository.save(user));
+    }
+
+    private UserResponseDTO toDTO(User user) {
+        Integer level = 1;
+        Integer experience = 0;
+
+        try {
+            Mascot mascot = mascotRepository.findByUserId(user.getId()).orElse(null);
+            if (mascot != null) {
+                level = mascot.getLevel();
+                experience = mascot.getExperience();
+            }
+        } catch (Exception e) {
+            // usa valores padrão
+        }
+
+        return new UserResponseDTO(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getBirthDate(),
+                user.getCoins(),
+                user.getProfilePictureUrl(),
+                user.getGender(),
+                user.getState(),
+                user.getCity(),
+                user.getHasTdah(),
+                user.getOtherConditions(),
+                user.getOccupation(),
+                user.getSymptoms(),
+                level,
+                experience
+        );
     }
 }
