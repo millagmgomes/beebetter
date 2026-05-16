@@ -2,7 +2,6 @@ package neurocode.beebetter.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import neurocode.beebetter.model.Task;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -62,4 +61,16 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<DailyProgress> dailyProgresses;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Alarm> alarms;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Note> notes;
+
+    private boolean streakPaused;
+
+    private LocalDate pauseStartDate;
+
+    private LocalDate pauseEndDate;
 }

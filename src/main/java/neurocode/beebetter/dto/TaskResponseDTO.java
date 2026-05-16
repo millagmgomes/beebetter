@@ -7,5 +7,9 @@ public record TaskResponseDTO(
         String title,
         String description,
         boolean completed,
-        LocalDate dueDate
+        LocalDate dueDate,
+        boolean isMission,
+        Integer targetCount,
+        Integer currentCount,
+        Double progressRate
 ) {}

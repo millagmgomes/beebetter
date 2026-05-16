@@ -13,4 +13,5 @@ public interface DailyProgressRepository extends JpaRepository<DailyProgress, Lo
 
     List<DailyProgress> findByUserIdAndDateBetween(Long userId, LocalDate start, LocalDate end);
 
+
 }

@@ -1,5 +1,6 @@
 package neurocode.beebetter.controller;
 
+import neurocode.beebetter.dto.GoalSummaryDTO;
 import neurocode.beebetter.dto.TaskRequestDTO;
 import neurocode.beebetter.dto.TaskResponseDTO;
 import neurocode.beebetter.service.TaskService;
@@ -37,5 +38,39 @@ public class TaskController {
     @PatchMapping("/{id}/complete")
     public ResponseEntity<TaskResponseDTO> complete(@PathVariable Long id) {
         return ResponseEntity.ok(taskService.completeTask(id));
+    }
+
+    @GetMapping("/user/{userId}/goals")
+    public ResponseEntity<GoalSummaryDTO> getGoals(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "TODAY") String period) {
+        return ResponseEntity.ok(taskService.getGoalSummary(userId, period));
+    }
+
+    @PatchMapping("/{id}/progress")
+    public ResponseEntity<TaskResponseDTO> updateProgress(
+            @PathVariable Long id,
+            @RequestParam Integer increment) {
+        return ResponseEntity.ok(taskService.updateMissionProgress(id, increment));
+    }
+
+    @GetMapping("/user/{userId}/today")
+    public ResponseEntity<List<TaskResponseDTO>> getToday(@PathVariable Long userId) {
+        return ResponseEntity.ok(taskService.getTodayTasks(userId));
+    }
+
+    @GetMapping("/user/{userId}/in-progress")
+    public ResponseEntity<List<TaskResponseDTO>> getInProgress(@PathVariable Long userId) {
+        return ResponseEntity.ok(taskService.getInProgressTasks(userId));
+    }
+
+    @GetMapping("/user/{userId}/completed")
+    public ResponseEntity<List<TaskResponseDTO>> getCompleted(@PathVariable Long userId) {
+        return ResponseEntity.ok(taskService.getCompletedTasks(userId));
+    }
+
+    @GetMapping("/user/{userId}/missions")
+    public ResponseEntity<List<TaskResponseDTO>> getMissions(@PathVariable Long userId) {
+        return ResponseEntity.ok(taskService.getMissions(userId));
     }
 }
