@@ -45,4 +45,13 @@ public class DailyProgressController {
             @RequestBody SleepRequestDTO dto) {
         return ResponseEntity.ok(dailyProgressService.saveSleep(userId, dto));
     }
+
+    @PostMapping("/mood/{userId}")
+    public ResponseEntity<Void> registerMood(
+            @PathVariable Long userId,
+            @RequestParam String mood) {
+        dailyProgressService.registerMood(userId, DailyProgress.Mood.valueOf(mood.toUpperCase()));
+        return ResponseEntity.ok().build();
+    }
+
 }

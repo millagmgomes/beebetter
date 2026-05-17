@@ -125,4 +125,12 @@ public class DailyProgressService {
                 calculateSleepDuration(dp.getSleepTime(), dp.getWakeTime())
         );
     }
+
+    @Transactional
+    public void registerMood(Long userId, DailyProgress.Mood mood) {
+        DailyProgress progress = getOrCreateToday(userId);
+        progress.setMood(mood);
+        dailyProgressRepository.save(progress);
+    }
+
 }
