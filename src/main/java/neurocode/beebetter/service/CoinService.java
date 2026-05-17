@@ -19,7 +19,7 @@ public class CoinService {
 
     @Transactional
     public Integer addDailyLoginReward(Long userId) {
-        return addCoins(userId, 10);
+        return addCoins(userId, 5);
     }
 
     public Integer getCoins(Long userId) {

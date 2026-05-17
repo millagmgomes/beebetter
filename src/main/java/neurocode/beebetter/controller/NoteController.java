@@ -23,6 +23,7 @@ public class NoteController {
 
     @PostMapping
     public ResponseEntity<NoteResponseDTO> create(@RequestBody NoteRequestDTO dto) {
+        System.out.println("DTO recebido: " + dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(noteService.create(dto));
     }
 

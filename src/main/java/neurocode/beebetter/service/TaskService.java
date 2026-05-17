@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -32,10 +33,20 @@ public class TaskService {
     }
 
     public List<TaskResponseDTO> listByUserAndDate(Long userId, LocalDate date) {
-        return taskRepository.findByUserIdAndDueDate(userId, date)
-                .stream()
-                .map(this::toDTO)
-                .toList();
+        // Tarefas normais do dia
+        List<Task> tasks = new ArrayList<>(taskRepository.findByUserIdAndDueDate(userId, date));
+
+        // Missões ativas naquele período
+        List<Task> activeMissions = taskRepository.findActiveMissionsByUserIdAndDate(userId, date);
+
+        // Evita duplicatas (missão que começa exatamente naquele dia)
+        activeMissions.forEach(mission -> {
+            if (tasks.stream().noneMatch(t -> t.getId().equals(mission.getId()))) {
+                tasks.add(mission);
+            }
+        });
+
+        return tasks.stream().map(this::toDTO).toList();
     }
 
     public TaskResponseDTO create(TaskRequestDTO dto) {

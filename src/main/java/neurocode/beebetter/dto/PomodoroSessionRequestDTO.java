@@ -1,6 +1,8 @@
 package neurocode.beebetter.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record PomodoroSessionRequestDTO(
-        Long userId,
-        Integer durationMinutes
+        @JsonProperty("userId") Long userId,
+        @JsonProperty("durationMinutes") Integer durationMinutes
 ) {}
