@@ -13,6 +13,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.client.RestClient;
 
 @Service
 public class AuthService {
@@ -91,6 +94,40 @@ public class AuthService {
 
         User user = userRepository.findByEmail(dto.email())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        String token = jwtService.generateToken(user.getEmail());
+        return new AuthResponseDTO(token, toDTO(user));
+    }
+
+    public AuthResponseDTO loginWithGoogle(String idToken) throws Exception {
+        // Verifica o token chamando a API do Google
+        String url = "https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken;
+
+        RestClient restClient = RestClient.create();
+        String body = restClient.get()
+                .uri(url)
+                .retrieve()
+                .body(String.class);
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode json = mapper.readTree(body);
+
+        String email = json.get("email").asText();
+        String name = json.get("name").asText();
+
+        User user = userRepository.findByEmail(email).orElseGet(() -> {
+            User novo = User.builder()
+                    .name(name)
+                    .email(email)
+                    .password("")
+                    .coins(0)
+                    .build();
+            userRepository.save(novo);
+            Mascot mascot = Mascot.builder()
+                    .name("Bee").level(1).experience(0).user(novo).build();
+            mascotRepository.save(mascot);
+            return novo;
+        });
 
         String token = jwtService.generateToken(user.getEmail());
         return new AuthResponseDTO(token, toDTO(user));
