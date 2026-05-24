@@ -8,6 +8,8 @@ import neurocode.beebetter.repository.MascotRepository;
 import neurocode.beebetter.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Service
@@ -17,12 +19,13 @@ public class UserService {
     private UserRepository repository;
 
     @Autowired
-    private MascotRepository mascotRepository; // ← adicionado
+    private MascotRepository mascotRepository;
 
     public User save(User user) {
         return repository.save(user);
     }
 
+    @Transactional(readOnly = true)
     public List<UserResponseDTO> listAll() {
         return repository.findAll()
                 .stream()
@@ -30,12 +33,14 @@ public class UserService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public UserResponseDTO findById(Long id) {
         User user = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
         return toDTO(user);
     }
 
+    @Transactional
     public UserResponseDTO update(Long id, UpdateUserDTO dto) {
         User user = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
@@ -52,6 +57,7 @@ public class UserService {
         return toDTO(repository.save(user));
     }
 
+    // toDTO dentro da transação — sessão JPA ainda está aberta
     private UserResponseDTO toDTO(User user) {
         Integer level = 1;
         Integer experience = 0;
@@ -66,6 +72,15 @@ public class UserService {
             // usa valores padrão
         }
 
+        // Força o carregamento das coleções LAZY dentro da transação
+        List<String> otherConditions = user.getOtherConditions() != null
+                ? List.copyOf(user.getOtherConditions())
+                : List.of();
+
+        List<String> symptoms = user.getSymptoms() != null
+                ? List.copyOf(user.getSymptoms())
+                : List.of();
+
         return new UserResponseDTO(
                 user.getId(),
                 user.getName(),
@@ -77,9 +92,9 @@ public class UserService {
                 user.getState(),
                 user.getCity(),
                 user.getHasTdah(),
-                user.getOtherConditions(),
+                otherConditions,
                 user.getOccupation(),
-                user.getSymptoms(),
+                symptoms,
                 level,
                 experience
         );

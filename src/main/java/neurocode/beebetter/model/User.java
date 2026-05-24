@@ -68,6 +68,10 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Note> notes;
 
+    // ← itens comprados na loja
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<UserItem> items;
+
     private boolean streakPaused;
 
     private LocalDate pauseStartDate;
