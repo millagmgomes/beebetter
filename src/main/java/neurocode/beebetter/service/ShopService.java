@@ -47,6 +47,7 @@ public class ShopService {
     }
 
     // ── Itens do usuário (vestiário) ──
+    @Transactional(readOnly = true)
     public List<UserItemResponseDTO> listUserItems(Long userId) {
         return userItemRepository.findByUserId(userId)
                 .stream()
@@ -59,22 +60,22 @@ public class ShopService {
     public List<ShopItemResponseDTO> getDailyShop(Long userId) {
         LocalDate today = LocalDate.now();
 
-        // Se já tem sorteio de hoje, retorna
+        // IDs dos itens que o usuário já comprou (move para cima)
+        List<Long> purchasedIds = userItemRepository
+                .findByUserId(userId)
+                .stream()
+                .map(ui -> ui.getShopItem().getId())
+                .toList();
+
         List<DailyShop> existing = dailyShopRepository
                 .findByUserIdAndDate(userId, today);
 
         if (existing.size() == DAILY_SHOP_SIZE) {
             return existing.stream()
                     .map(ds -> toShopDTO(ds.getShopItem()))
+                    .filter(dto -> !purchasedIds.contains(dto.id())) // ← filtro
                     .toList();
         }
-
-        // IDs dos itens que o usuário já comprou
-        List<Long> purchasedIds = userItemRepository
-                .findByUserId(userId)
-                .stream()
-                .map(ui -> ui.getShopItem().getId())
-                .toList();
 
         // Itens disponíveis (não comprados)
         List<ShopItem> available = shopItemRepository.findAll()

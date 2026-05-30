@@ -36,8 +36,15 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> update(@PathVariable Long id, @RequestBody UpdateUserDTO dto) {
-        return ResponseEntity.ok(userService.update(id, dto));
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody UpdateUserDTO dto) {
+        try {
+            UserResponseDTO updatedUser = userService.update(id, dto);
+            return ResponseEntity.ok(updatedUser);
+        } catch (Exception e) {
+            System.out.println("====== ERRO NO UPDATE DE USUÁRIO ======");
+            e.printStackTrace(); // Isso vai cuspir o culpado real no console do IntelliJ
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping("/{id}/daily-login")

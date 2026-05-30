@@ -56,4 +56,14 @@ public class AlarmService {
                 a.getId(), a.getTime(), a.getLabel(), a.isActive(), a.getRingtone()
         );
     }
+
+    public AlarmResponseDTO update(Long alarmId, AlarmRequestDTO dto) {
+        Alarm alarm = alarmRepository.findById(alarmId)
+                .orElseThrow(() -> new RuntimeException("Alarme não encontrado"));
+        alarm.setTime(dto.time());
+        alarm.setLabel(dto.label());
+        alarm.setRingtone(dto.ringtone());
+        alarmRepository.save(alarm);
+        return toDTO(alarm);
+    }
 }

@@ -46,6 +46,6 @@ public class Task {
     private User user;
 
     public enum RecurrenceType {
-        NONE, DAILY, WEEKLY, MONTHLY
+        NONE, DAILY, WEEKLY, MONTHLY, YEARLY
     }
 }

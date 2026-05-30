@@ -33,13 +33,10 @@ public class TaskService {
     }
 
     public List<TaskResponseDTO> listByUserAndDate(Long userId, LocalDate date) {
-        // Tarefas normais do dia
         List<Task> tasks = new ArrayList<>(taskRepository.findByUserIdAndDueDate(userId, date));
 
-        // Missões ativas naquele período
         List<Task> activeMissions = taskRepository.findActiveMissionsByUserIdAndDate(userId, date);
 
-        // Evita duplicatas (missão que começa exatamente naquele dia)
         activeMissions.forEach(mission -> {
             if (tasks.stream().noneMatch(t -> t.getId().equals(mission.getId()))) {
                 tasks.add(mission);
@@ -63,7 +60,8 @@ public class TaskService {
                         : Task.RecurrenceType.NONE)
                 .recurrenceEndDate(dto.recurrenceEndDate())
                 .isMission(dto.isMission())
-                .targetCount(dto.isMission() ? dto.targetCount() : null)
+                // ← aceita targetCount para qualquer tipo de tarefa
+                .targetCount(dto.targetCount() != null ? dto.targetCount() : 1)
                 .currentCount(0)
                 .user(user)
                 .build();
@@ -117,6 +115,7 @@ public class TaskService {
                 case DAILY -> current.plusDays(1);
                 case WEEKLY -> current.plusWeeks(1);
                 case MONTHLY -> current.plusMonths(1);
+                case YEARLY -> current.plusYears(1);
                 default -> end.plusDays(1);
             };
         }
@@ -124,9 +123,8 @@ public class TaskService {
 
     private TaskResponseDTO toDTO(Task task) {
         Double progressRate = null;
-        if (task.isMission()
-                && task.getTargetCount() != null
-                && task.getTargetCount() > 0) {
+        // ← calcula progresso para qualquer tarefa com targetCount > 1
+        if (task.getTargetCount() != null && task.getTargetCount() > 1) {
             progressRate = Math.round(
                     (task.getCurrentCount() * 100.0 / task.getTargetCount()) * 10
             ) / 10.0;
@@ -169,20 +167,23 @@ public class TaskService {
         return new GoalSummaryDTO(total, completed, pending, rate, period.toUpperCase());
     }
 
+    // ← aceita tarefas normais com divisão
     public TaskResponseDTO updateMissionProgress(Long taskId, Integer increment) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
 
-        if (!task.isMission()) {
-            throw new RuntimeException("Essa tarefa não é uma missão");
-        }
-
         int newCount = task.getCurrentCount() + increment;
         task.setCurrentCount(newCount);
 
-        if (newCount >= task.getTargetCount()) {
+        if (task.getTargetCount() != null && newCount >= task.getTargetCount()) {
             task.setCurrentCount(task.getTargetCount());
             task.setCompleted(true);
+
+            // Recompensa ao completar
+            Long userId = task.getUser().getId();
+            mascotService.addExperience(userId, 20);
+            dailyProgressService.registerCompletedTask(userId);
+            coinService.addTaskReward(userId);
         }
 
         taskRepository.save(task);

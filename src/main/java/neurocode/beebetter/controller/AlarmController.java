@@ -40,4 +40,11 @@ public class AlarmController {
         alarmService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<AlarmResponseDTO> update(
+            @PathVariable Long id,
+            @RequestBody AlarmRequestDTO dto) {
+        return ResponseEntity.ok(alarmService.update(id, dto));
+    }
 }
