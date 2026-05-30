@@ -1,5 +1,6 @@
 package neurocode.beebetter.controller;
 
+import jakarta.validation.Valid;
 import neurocode.beebetter.dto.AuthResponseDTO;
 import neurocode.beebetter.dto.LoginRequestDTO;
 import neurocode.beebetter.dto.RegisterRequestDTO;
@@ -19,8 +20,12 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponseDTO> register(@RequestBody RegisterRequestDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(dto));
+    public ResponseEntity<AuthResponseDTO> register(
+            @Valid @RequestBody RegisterRequestDTO dto
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(authService.register(dto));
     }
 
     @PostMapping("/login")
