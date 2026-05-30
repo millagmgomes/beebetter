@@ -80,7 +80,7 @@ src
 ### 1. Clone o projeto
 
 ```bash
-git clone <url-do-repositorio>
+git clone https://github.com/millagmgomes/beebetter.git
 ```
 
 ### 2. Configure as variáveis de ambiente
