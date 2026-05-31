@@ -9,6 +9,7 @@ public record UserItemResponseDTO(
         String description,
         String assetName,
         String category,
+        Integer price,
         LocalDateTime purchasedAt,
         boolean equipped
 ) {}

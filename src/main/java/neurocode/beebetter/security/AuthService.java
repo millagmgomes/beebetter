@@ -5,8 +5,12 @@ import neurocode.beebetter.dto.LoginRequestDTO;
 import neurocode.beebetter.dto.RegisterRequestDTO;
 import neurocode.beebetter.dto.UserResponseDTO;
 import neurocode.beebetter.model.Mascot;
+import neurocode.beebetter.model.ShopItem;
 import neurocode.beebetter.model.User;
+import neurocode.beebetter.model.UserItem;
 import neurocode.beebetter.repository.MascotRepository;
+import neurocode.beebetter.repository.ShopItemRepository;
+import neurocode.beebetter.repository.UserItemRepository;
 import neurocode.beebetter.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,10 +29,13 @@ public class AuthService {
 
     @Autowired private UserRepository userRepository;
     @Autowired private MascotRepository mascotRepository;
+    @Autowired private ShopItemRepository shopItemRepository;
+    @Autowired private UserItemRepository userItemRepository;
     @Autowired private JwtService jwtService;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private AuthenticationManager authenticationManager;
 
+    // ─── REGISTER ─────────────────────────────────────────────────────────────
     @Transactional
     public AuthResponseDTO register(RegisterRequestDTO dto) {
         if (userRepository.findByEmail(dto.email()).isPresent()) {
@@ -54,10 +61,14 @@ public class AuthService {
 
         mascotRepository.save(mascot);
 
+        // Dá os itens padrão ao novo usuário
+        darItensPadrao(user);
+
         String token = jwtService.generateToken(user.getEmail());
         return new AuthResponseDTO(token, toDTO(user));
     }
 
+    // ─── LOGIN ─────────────────────────────────────────────────────────────────
     @Transactional
     public AuthResponseDTO login(LoginRequestDTO dto) {
         authenticationManager.authenticate(
@@ -67,10 +78,14 @@ public class AuthService {
         User user = userRepository.findByEmail(dto.email())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
+        // Garante que usuários antigos também recebam os itens padrão
+        darItensPadrao(user);
+
         String token = jwtService.generateToken(user.getEmail());
         return new AuthResponseDTO(token, toDTO(user));
     }
 
+    // ─── LOGIN GOOGLE ──────────────────────────────────────────────────────────
     @Transactional
     public AuthResponseDTO loginWithGoogle(String idToken) throws Exception {
         String url = "https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken;
@@ -95,16 +110,50 @@ public class AuthService {
                     .coins(0)
                     .build();
             userRepository.save(novo);
+
             Mascot mascot = Mascot.builder()
                     .name("Bee").level(1).experience(0).user(novo).build();
             mascotRepository.save(mascot);
+
             return novo;
         });
+
+        // Garante itens padrão para usuários Google também
+        darItensPadrao(user);
 
         String token = jwtService.generateToken(user.getEmail());
         return new AuthResponseDTO(token, toDTO(user));
     }
 
+    // ─── DAR ITENS PADRÃO ─────────────────────────────────────────────────────
+    // Busca todos os shop_items com price=0 e associa ao usuário
+    // caso ele ainda não os tenha (idempotente — pode chamar várias vezes)
+    private void darItensPadrao(User user) {
+        try {
+            List<ShopItem> itensPadrao = shopItemRepository.findByPrice(0);
+            System.out.println("Itens padrão encontrados: " + itensPadrao.size()); // ← add
+
+            for (ShopItem item : itensPadrao) {
+                boolean jaTemItem = userItemRepository
+                        .existsByUserIdAndShopItemId(user.getId(), item.getId());
+                System.out.println("Item " + item.getId() + " - já tem: " + jaTemItem); // ← add
+
+                if (!jaTemItem) {
+                    UserItem userItem = UserItem.builder()
+                            .user(user)
+                            .shopItem(item)
+                            .equipped(false)
+                            .build();
+                    userItemRepository.save(userItem);
+                    System.out.println("Item " + item.getId() + " salvo!"); // ← add
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Erro ao dar itens padrão: " + e.getMessage());
+        }
+    }
+
+    // ─── DTO ──────────────────────────────────────────────────────────────────
     private UserResponseDTO toDTO(User user) {
         Integer level = 1;
         Integer experience = 0;
@@ -119,7 +168,6 @@ public class AuthService {
             System.out.println("Erro ao buscar mascot: " + e.getMessage());
         }
 
-        // Força carregamento das coleções LAZY dentro da transação
         List<String> otherConditions = user.getOtherConditions() != null
                 ? List.copyOf(user.getOtherConditions())
                 : List.of();

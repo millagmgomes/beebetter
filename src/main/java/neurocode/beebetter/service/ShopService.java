@@ -184,6 +184,7 @@ public class ShopService {
                 ui.getShopItem().getDescription(),
                 ui.getShopItem().getAssetName(),
                 ui.getShopItem().getCategory().name(),
+                ui.getShopItem().getPrice(),
                 ui.getPurchasedAt(),
                 ui.isEquipped()
         );

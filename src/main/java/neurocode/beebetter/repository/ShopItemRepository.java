@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ShopItemRepository extends JpaRepository<ShopItem, Long> {
     List<ShopItem> findByCategory(ShopItem.ItemCategory category);
+    List<ShopItem> findByPrice(Integer price);
 }
