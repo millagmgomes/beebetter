@@ -60,7 +60,6 @@ public class TaskService {
                         : Task.RecurrenceType.NONE)
                 .recurrenceEndDate(dto.recurrenceEndDate())
                 .isMission(dto.isMission())
-                // ← aceita targetCount para qualquer tipo de tarefa
                 .targetCount(dto.targetCount() != null ? dto.targetCount() : 1)
                 .currentCount(0)
                 .user(user)
@@ -92,7 +91,15 @@ public class TaskService {
     public void generateRecurringTasks(Task originalTask) {
         if (originalTask.getRecurrence() == Task.RecurrenceType.NONE) return;
 
-        LocalDate start = originalTask.getDueDate().plusDays(1);
+        // ── Começa já no próximo intervalo correto (sem duplicata no dia seguinte) ──
+        LocalDate start = switch (originalTask.getRecurrence()) {
+            case DAILY   -> originalTask.getDueDate().plusDays(1);
+            case WEEKLY  -> originalTask.getDueDate().plusWeeks(1);
+            case MONTHLY -> originalTask.getDueDate().plusMonths(1);
+            case YEARLY  -> originalTask.getDueDate().plusYears(1);
+            default      -> originalTask.getDueDate().plusDays(1);
+        };
+
         LocalDate end = originalTask.getRecurrenceEndDate() != null
                 ? originalTask.getRecurrenceEndDate()
                 : start.plusMonths(3);
@@ -107,23 +114,25 @@ public class TaskService {
                     .user(originalTask.getUser())
                     .dueDate(current)
                     .recurrence(Task.RecurrenceType.NONE)
+                    // ── Copia divisão para todas as recorrências ──
+                    .targetCount(originalTask.getTargetCount())
+                    .currentCount(0)
                     .build();
 
             taskRepository.save(recurring);
 
             current = switch (originalTask.getRecurrence()) {
-                case DAILY -> current.plusDays(1);
-                case WEEKLY -> current.plusWeeks(1);
+                case DAILY   -> current.plusDays(1);
+                case WEEKLY  -> current.plusWeeks(1);
                 case MONTHLY -> current.plusMonths(1);
-                case YEARLY -> current.plusYears(1);
-                default -> end.plusDays(1);
+                case YEARLY  -> current.plusYears(1);
+                default      -> end.plusDays(1);
             };
         }
     }
 
     private TaskResponseDTO toDTO(Task task) {
         Double progressRate = null;
-        // ← calcula progresso para qualquer tarefa com targetCount > 1
         if (task.getTargetCount() != null && task.getTargetCount() > 1) {
             progressRate = Math.round(
                     (task.getCurrentCount() * 100.0 / task.getTargetCount()) * 10
@@ -167,7 +176,6 @@ public class TaskService {
         return new GoalSummaryDTO(total, completed, pending, rate, period.toUpperCase());
     }
 
-    // ← aceita tarefas normais com divisão
     public TaskResponseDTO updateMissionProgress(Long taskId, Integer increment) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
@@ -179,7 +187,6 @@ public class TaskService {
             task.setCurrentCount(task.getTargetCount());
             task.setCompleted(true);
 
-            // Recompensa ao completar
             Long userId = task.getUser().getId();
             mascotService.addExperience(userId, 20);
             dailyProgressService.registerCompletedTask(userId);

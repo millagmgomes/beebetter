@@ -19,15 +19,15 @@ public class MascotService {
                 .orElseThrow(() -> new RuntimeException("Mascote não encontrado"));
 
         int totalXp = mascot.getExperience() + xp;
-        mascot.setExperience(totalXp);
 
-        if (totalXp >= mascot.getLevel() * 100) {
+        // Loop para suportar múltiplos level ups de uma vez
+        while (totalXp >= mascot.getLevel() * 100) {
+            totalXp -= mascot.getLevel() * 100;
             mascot.setLevel(mascot.getLevel() + 1);
-            mascot.setExperience(0);
         }
 
+        mascot.setExperience(totalXp);
         mascotRepository.save(mascot);
-
 
         rewardService.checkAndUnlockRewards(mascot.getId(), mascot.getExperience());
     }
